@@ -13,7 +13,7 @@
  * Usage:
  *   node src/connect-9router.js \
  *     --base http://localhost:20128 --password 123456 \
- *     --api-key alv2_mhjQbSUQm7n… (48-char, alv2_ prefix) [--name "Aion Labs"] [--prefix aionlabs]
+ *     --api-key YOUR_KEY (48-char, alv2_ prefix) [--name "Aion Labs"] [--prefix aionlabs]
  *
  *   node src/connect-9router.js                  # register every key in keys.txt
  *   node src/connect-9router.js --model <id>     # pin the connection's default model

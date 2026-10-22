@@ -36,7 +36,7 @@
 
 Aion Labs (`aionlabs.ai`) is a Django + **django-allauth** panel behind Cloudflare, and its signup has two hard gates: a real **Cloudflare Turnstile** widget (`sitekey 0x4AAAAAAAz_ySGy6QN0NLcx`, token field `cf-turnstile-response`) and **mandatory e-mail verification** — logging in with an unconfirmed account is bounced to `/accounts/confirm-email/` with a **405**, so there is no shortcut around reading the inbox. Everything after the mail is plain HTTP: `POST /accounts/login/` takes no captcha, the session cookie opens `/app/api-keys/`, and `POST /app/api-keys/create/` returns the `alv2_…` key inline. That is the whole rail this tool automates.
 
-The lane's own run took **10 accounts → 10 keys, every one kept only after a live chat 200** (`content:"OK"`, `finish_reason:stop`) on both `aion-labs/aion-3.0-mini` and `aion-labs/aion-3.5`; the scale pass minted 6 keys in 8 signup attempts (~56 s per key) through one browser session and a pinned exit.
+The lane's own run took **keys verified** (`content:"OK"`, `finish_reason:stop`) on both `aion-labs/aion-3.0-mini` and `aion-labs/aion-3.5`; the scale pass minted 6 keys in 8 signup attempts (~56 s per key) through one browser session and a pinned exit.
 
 ## 🎁 Free tier — how much you get
 

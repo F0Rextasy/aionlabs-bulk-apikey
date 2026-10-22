@@ -30,12 +30,6 @@
 
 </div>
 
-<div align="center">
-
-[English](README.md) · **Türkçe** · [中文](README.cn.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md) · [Português](README.pt.md)
-
-</div>
-
 ---
 
 ## ✨ Bu neden var
@@ -106,6 +100,7 @@ Canlı bir anahtar, 60–100 token'lık bir tamamlama için **1,5–2,6 sn** iç
 cd aionlabs-bulk-apikey
 printf 'socks5://host:port\n' > proxies.txt   # optional — every request, Chrome included, goes through it
 node src/launcher.js                     # interactive: mint / verify / screen / settings
+
 # or: node src/cli.js --count 10 --pool proxies.txt
 ```
 
@@ -198,6 +193,7 @@ node src/cli.js --help
 
 ```bash
 node src/cli.js --connect-9router --9router-base http://localhost:20128 --9router-password 123456
+
 # or the standalone connector shipped next to the CLI:
 node src/connect-9router.js --api-key alv2_…
 ```
@@ -213,6 +209,7 @@ Varsayılanlar: `--9router-prefix aionlabs`, `--9router-name Aion Labs`, `--base
 | 🔑 Bir anahtarın size kazandırdıkları | kendi hesabında bir `alv2_…` anahtarı, `aion-labs/aion-3.0-mini` üzerinde sohbet doğrulamalı |
 | 🌐 API şekli | OpenAI uyumlu: `POST https://api.aionlabs.ai/v1/chat/completions` (6 model id) |
 | 🔒 Verileriniz | yalnızca `aionlabs.ai`, `api.aionlabs.ai`, gelen kutunuzun arka ucu ve kendi proxy'nizle iletişim kurulur; anahtarlar makinenizde kalır |
+
 ## 🐞 Sorunlar
 
 Aion Labs kayıt formunu, Turnstile sitekey'ini, onay e-postasını veya api-keys rotasını değiştirirse, araç o adımda durur ve reddi kelimesi kelimesine bildirir (tam durum kodu, indiği sayfa veya gördüğü posta konusu). Komut ve tam çıktıyla birlikte **[bir sorun açın](../../issues)**.

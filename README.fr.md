@@ -100,6 +100,7 @@ Une clé active répond en **1,5–2,6 s** pour une complétion de 60–100 jeto
 cd aionlabs-bulk-apikey
 printf 'socks5://host:port\n' > proxies.txt   # optional — every request, Chrome included, goes through it
 node src/launcher.js                     # interactive: mint / verify / screen / settings
+
 # or: node src/cli.js --count 10 --pool proxies.txt
 ```
 

@@ -65,14 +65,14 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 | Model ID | Context | Input / 1M | Output / 1M | Verified |
 | --- | --- | --- | --- | --- |
-| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **10 of 10 keys chat-200** |
-| `aion-labs/aion-3.5` | 256K | — | — | **10 of 10 keys chat-200** |
+| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **verified** |
+| `aion-labs/aion-3.5` | 256K | — | — | **verified** |
 | `aion-labs/aion-2.0` | 128K | $0.80 | $1.60 | chat-200 on the lane keys |
 | `aion-labs/aion-3.0` | 128K | $3.00 | $6.00 | listed |
 | `aion-labs/aion-3.5-mini` | 256K | — | — | listed |
 | `aion-labs/aion-rp-llama-3.1-8b` | 32K | — | — | listed (roleplay, 8B) |
 
-> ⚠️ **Two quirks the gate already handles.** The reasoning field is **`reasoning`**, not `reasoning_content`, and the mini/3.5 models think before answering: with `max_tokens` below ~512 the reply comes back `content:""` with `finish_reason:"length"`. The CLI asks for **512** by default (`--max-tokens`); a smaller budget makes a live key look dead.
+> ⚠️ **Two quirks the gate already handles.** The reasoning field is **`reasoning`**, not `reasoning_content`, and the mini/3.5 models think before answering: with `max_tokens` below ~512 the reply comes back `content:""` with `finish_reason:"length"`. The CLI asks for **512** by default (`--max-tokens`); a smaller budget makes a verified keys look dead.
 
 ## 🧪 How to use the API
 
@@ -92,7 +92,7 @@ print(c.chat.completions.create(model="aion-labs/aion-3.0-mini",
       messages=[{"role":"user","content":"Say OK"}], max_tokens=512).choices[0].message.content)
 ```
 
-A live key answers in **1.5–2.6 s** for a 60–100 token completion. The panel returns no rate-limit headers (`x-request-id` only), so the 15 RPM / 20k TPD ceilings are enforced silently.
+A verified keys answers in **1.5–2.6 s** for a 60–100 token completion. The panel returns no rate-limit headers (`x-request-id` only), so the 15 RPM / 20k TPD ceilings are enforced silently.
 
 ## 🛠 Quick start
 

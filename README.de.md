@@ -11,16 +11,17 @@
 
 # aionlabs-bulk-apikey
 
-**Aion-Labs-Konten in großen Mengen erstellen mit automatisch generierten API-Schlüsseln — OpenAI-kompatible Inferenz + 9Router-Connector.**
+**Aion Labs-Konten in großen Mengen erstellen mit automatisch generierten API-Schlüsseln — OpenAI-kompatible Inferenz + 9Router-Connector.**
 
 [![Node](https://img.shields.io/badge/Node-%E2%89%A518-3DA639?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-blue?style=for-the-badge)](#)
 [![License](https://img.shields.io/badge/license-MIT-6ea8fe?style=for-the-badge)](LICENSE)
 [![Models](https://img.shields.io/badge/models-6%20served-412991?style=for-the-badge)](https://www.aionlabs.ai/docs/models/)
 [![9Router](https://img.shields.io/badge/9Router-connector-8B5CF6?style=for-the-badge)](#-connect-to-9router)
+[![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 Schnellstart](#-quick-start) · [🎁 Free-Tier](#-free-tier--how-much-you-get) · [🤖 Modelle](#-models--all-6-of-them) · [🧪 API verwenden](#-how-to-use-the-api) · [✅ Verifiziert](#-verified-working--every-key-is-tested) · [🧭 Funktionsweise](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [⚙️ Optionen](#️-cli-options) · [🛰️ Proxys](#️-behind-a-proxy) · [🐞 Probleme](#-issues)
+[🛠 Schnellstart](#-quick-start) · [🎁 Free-Tier](#-free-tier--how-much-you-get) · [🤖 Modelle](#-models--all-6-of-them) · [🧪 API verwenden](#-how-to-use-the-api) · [✅ Verifiziert](#-verified-working--every-key-is-tested) · [🧭 Funktionsweise](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Optionen](#️-cli-options) · [🛰️ Proxys](#️-behind-a-proxy) · [🐞 Issues](#-issues)
 
 </div>
 
@@ -34,9 +35,9 @@
 
 ## ✨ Warum es das gibt
 
-Aion Labs (`aionlabs.ai`) ist ein Django- + **django-allauth**-Panel hinter Cloudflare, und die Registrierung hat zwei harte Hürden: ein echtes **Cloudflare-Turnstile**-Widget (`sitekey 0x4AAAAAAAz_ySGy6QN0NLcx`, Token-Feld `cf-turnstile-response`) und eine **verpflichtende E-Mail-Verifizierung** — eine Anmeldung mit einem unbestätigten Konto wird mit einem **405** auf `/accounts/confirm-email/` umgeleitet, es gibt also keinen Weg daran vorbei, das Postfach zu lesen. Alles nach der E-Mail ist reines HTTP: `POST /accounts/login/` verlangt kein Captcha, das Session-Cookie öffnet `/app/api-keys/`, und `POST /app/api-keys/create/` liefert den `alv2_…`-Schlüssel direkt zurück. Genau diese Schiene automatisiert dieses Tool.
+Aion Labs (`aionlabs.ai`) ist ein Django- + **django-allauth**-Panel hinter Cloudflare, und die Registrierung hat zwei harte Hürden: ein echtes **Cloudflare Turnstile**-Widget (`sitekey 0x4AAAAAAAz_ySGy6QN0NLcx`, Token-Feld `cf-turnstile-response`) und eine **Pflicht-E-Mail-Verifizierung** — ein Login mit einem unbestätigten Konto wird mit einem **405** auf `/accounts/confirm-email/` umgeleitet, es gibt also keinen Weg daran vorbei, das Postfach zu lesen. Alles nach der E-Mail ist reines HTTP: `POST /accounts/login/` verlangt kein Captcha, das Session-Cookie öffnet `/app/api-keys/`, und `POST /app/api-keys/create/` liefert den `alv2_…`-Schlüssel direkt in der Antwort. Das ist die gesamte Schiene, die dieses Tool automatisiert.
 
-Der eigene Durchlauf dieser Spur ergab **10 Konten → 10 Schlüssel, jeder einzelne nur behalten nach einem Live-Chat-200** (`content:"OK"`, `finish_reason:stop`) sowohl bei `aion-labs/aion-3.0-mini` als auch bei `aion-labs/aion-3.5`; der Skalierungslauf erzeugte 6 Schlüssel in 8 Registrierungsversuchen (~56 s pro Schlüssel) über eine Browser-Session und einen festgelegten Exit.
+Der eigene Durchlauf dieser Schiene ergab **verifizierte Schlüssel** (`content:"OK"`, `finish_reason:stop`) sowohl bei `aion-labs/aion-3.0-mini` als auch bei `aion-labs/aion-3.5`; der Skalierungslauf erzeugte 6 Schlüssel in 8 Registrierungsversuchen (~56 s pro Schlüssel) über eine Browser-Session und einen festgelegten Exit.
 
 ## 🎁 Free-Tier — wie viel du bekommst
 
@@ -47,13 +48,13 @@ Der eigene Durchlauf dieser Spur ergab **10 Konten → 10 Schlüssel, jeder einz
 | Tokens pro Minute | **20.000** |
 | Tokens pro Tag | **20.000** — die harte Tagesobergrenze des Free-Tiers |
 | Höhere Tarife | nur durch lebenslanges Credit-Aufladen ($1 … $1.000); ein Tarif wird nie herabgestuft |
-| Abrechnungseinheit | **pro Konto** — das Kontingent liegt am Konto, weshalb dieses Tool ein Konto pro Schlüssel erstellt |
-| E-Mail-Hürde | **verpflichtend** (allauth); unbestätigte Anmeldung → `405` bei `/accounts/confirm-email/` |
+| Abrechnungseinheit | **pro Konto** — das Kontingent liegt beim Konto, weshalb dieses Tool ein Konto pro Schlüssel erstellt |
+| E-Mail-Hürde | **obligatorisch** (allauth); unbestätigter Login → `405` bei `/accounts/confirm-email/` |
 | Telefon / Karte | keines von beiden |
 
 Mit N Schlüsseln hältst du N Konten, also **N × 20.000 Tokens/Tag** und jeweils 15 RPM. Der Tageszähler wird pro Konto zurückgesetzt, nicht pro IP.
 
-> 💡 Der Free-Tier wird von Aion Labs festgelegt und kann sich ändern. Prüfe die aktuellen Zahlen auf [www.aionlabs.ai](https://www.aionlabs.ai) — und lass das Gate des Tools selbst entscheiden:
+> 💡 Der Free-Tier wird von Aion Labs festgelegt und kann sich ändern. Prüfe die aktuellen Zahlen auf [www.aionlabs.ai](https://www.aionlabs.ai) — und lass die eigene Prüfung des Tools entscheiden:
 
 ```bash
 node src/cli.js --verify-only     # every key in keys.txt is re-tested with a real chat call
@@ -65,14 +66,14 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 | Modell-ID | Kontext | Input / 1M | Output / 1M | Verifiziert |
 | --- | --- | --- | --- | --- |
-| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **10 von 10 Schlüsseln Chat-200** |
-| `aion-labs/aion-3.5` | 256K | — | — | **10 von 10 Schlüsseln Chat-200** |
-| `aion-labs/aion-2.0` | 128K | $0.80 | $1.60 | Chat-200 bei den Spur-Schlüsseln |
+| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **verifiziert** |
+| `aion-labs/aion-3.5` | 256K | — | — | **verifiziert** |
+| `aion-labs/aion-2.0` | 128K | $0.80 | $1.60 | chat-200 bei den Schlüsseln der Schiene |
 | `aion-labs/aion-3.0` | 128K | $3.00 | $6.00 | gelistet |
 | `aion-labs/aion-3.5-mini` | 256K | — | — | gelistet |
 | `aion-labs/aion-rp-llama-3.1-8b` | 32K | — | — | gelistet (Roleplay, 8B) |
 
-> ⚠️ **Zwei Eigenheiten, die das Gate bereits behandelt.** Das Reasoning-Feld ist **`reasoning`**, nicht `reasoning_content`, und die Mini-/3.5-Modelle denken nach, bevor sie antworten: mit `max_tokens` unter ~512 kommt die Antwort als `content:""` mit `finish_reason:"length"` zurück. Die CLI fordert standardmäßig **512** an (`--max-tokens`); ein kleineres Budget lässt einen Live-Schlüssel tot aussehen.
+> ⚠️ **Zwei Eigenheiten, die die Prüfung bereits behandelt.** Das Reasoning-Feld heißt **`reasoning`**, nicht `reasoning_content`, und die Mini-/3.5-Modelle denken nach, bevor sie antworten: mit `max_tokens` unter ~512 kommt die Antwort als `content:""` mit `finish_reason:"length"` zurück. Die CLI fordert standardmäßig **512** an (`--max-tokens`); ein kleineres Budget lässt einen verifizierten Schlüssel tot erscheinen.
 
 ## 🧪 So verwendest du die API
 
@@ -92,7 +93,7 @@ print(c.chat.completions.create(model="aion-labs/aion-3.0-mini",
       messages=[{"role":"user","content":"Say OK"}], max_tokens=512).choices[0].message.content)
 ```
 
-Ein Live-Schlüssel antwortet in **1,5–2,6 s** für eine 60–100-Token-Vervollständigung. Das Panel liefert keine Rate-Limit-Header zurück (nur `x-request-id`), daher werden die Obergrenzen von 15 RPM / 20k TPD stillschweigend durchgesetzt.
+Ein verifizierter Schlüssel antwortet in **1,5–2,6 s** für eine 60–100-Token-Vervollständigung. Das Panel liefert keine Rate-Limit-Header (nur `x-request-id`), daher werden die Obergrenzen von 15 RPM / 20k TPD stillschweigend durchgesetzt.
 
 ## 🛠 Schnellstart
 
@@ -100,19 +101,24 @@ Ein Live-Schlüssel antwortet in **1,5–2,6 s** für eine 60–100-Token-Vervol
 cd aionlabs-bulk-apikey
 printf 'socks5://host:port\n' > proxies.txt   # optional — every request, Chrome included, goes through it
 node src/launcher.js                     # interactive: mint / verify / screen / settings
-
 # or: node src/cli.js --count 10 --pool proxies.txt
 ```
 
-Der Browser-Schritt benötigt **Chrome oder Chromium** auf dem Rechner (`--browser <exe>` oder `CHROME_PATH`, falls es nicht am Standardort liegt). Ein Schlüssel wird **nur** dann in `keys.txt` geschrieben, wenn `/v1/chat/completions` mit 200 und echtem Inhalt antwortet; `accounts.jsonl` speichert Adresse, Passwort, Schlüsselname und das Gate-Ergebnis.
+Der Browser-Schritt benötigt **Chrome oder Chromium** auf dem Rechner (`--browser <exe>` oder `CHROME_PATH`, falls es nicht am Standardort liegt). Ein Schlüssel wird **nur** dann in `keys.txt` geschrieben, wenn `/v1/chat/completions` mit 200 und echtem Inhalt antwortet; `accounts.jsonl` speichert Adresse, Passwort, Schlüsselname und das Prüfergebnis.
 
-Ein Konto pro Schlüssel: `--count N` bedeutet eigentlich "N kostenlose Konten". Das Tool wechselt automatisch, wenn sich ein temp.tf-Pool-Postfach als dem Panel bekannt herausstellt (`[Aion Labs] Account Already Exists`) oder wenn das Turnstile-Widget hängt.
+Ein Konto pro Schlüssel: `--count N` bedeutet eigentlich "N kostenlose Konten". Das Tool wechselt automatisch, wenn sich herausstellt, dass ein temp.tf-Pool-Postfach dem Panel bereits bekannt ist (`[Aion Labs] Account Already Exists`) oder wenn das Turnstile-Widget hängen bleibt.
 
 ### 🖱️ Der Launcher
 
-Der Launcher fragt nach der Proxy-Liste (optional — ohne eine läuft die CLI direkt), der Anzahl und dem Modell, merkt sie sich in `launcher.config.json` und führt die CLI aus: **mint**, **verify**, **screen** (die Exits gegen das Registrierungs-Gate testen), **settings**, **help** und **Connect to 9Router**.
+Der Launcher fragt nach der Proxy-Liste (optional — ohne eine läuft die CLI direkt), der Anzahl und dem Modell, merkt sie sich in `launcher.config.json` und führt die CLI aus: **mint**, **verify**, **screen** (die Exits gegen die Registrierungshürde testen), **settings**, **help** und **Connect to 9Router**.
 
 ## ✅ Verifiziert funktionierend — jeder Schlüssel wird getestet
+
+> **Qualitätsprüfungen.** Jeder Schlüssel hier hat ein Live-`chat-200` bestanden, bevor er in `keys.txt`
+> geschrieben wurde (tote Schlüssel werden nie ausgeliefert). Router-Kombinationen folgen derselben Regel
+> auf Modellebene: ein Eintrag wird **nur hinzugefügt, wenn das Modell `chat-200` antwortet und Tools
+> aufrufen kann** — ein Modell ohne Tool-Unterstützung, ein toter Schlüssel oder ein toter Anbieter wird
+> verworfen statt hinzugefügt. Funktioniert mit **9Router und OmniRoute**.
 
 | Prüfung | Ergebnis |
 | --- | --- |
@@ -122,9 +128,9 @@ Der Launcher fragt nach der Proxy-Liste (optional — ohne eine läuft die CLI d
 | Registrierung absenden | **200 → `/accounts/confirm-email/`**, Turnstile-Token 730 Zeichen, gelöst durch das eigene Widget der Seite in einem sichtbaren Chrome |
 | Bestätigungsmail | `noreply@<panel-mail>` `"[Aion Labs] Please Confirm Your Email Address"`, **~10 s** nach dem Absenden; Link `…/accounts/confirm-email/<key>/` → landet auf `/app/` |
 | `POST /accounts/login/` (bestätigtes Konto) | Session hergestellt (der nachfolgende `/app/`-GET antwortet trotzdem mit **403** — harmlos) |
-| `GET /app/api-keys/` + `POST /app/api-keys/create/` | **200**, `alv2_…`-Schlüssel (48 Zeichen) direkt zurückgegeben |
+| `GET /app/api-keys/` + `POST /app/api-keys/create/` | **200**, `alv2_…`-Schlüssel (48 Zeichen) direkt in der Antwort |
 | `POST /v1/chat/completions` | **200** mit `content:"OK"` bei allen **10** Schlüsseln (`aion-3.0-mini` und `aion-3.5`) |
-| Anmeldung mit unbestätigtem Konto | **405** bei `/accounts/confirm-email/` — die Verifizierung ist wirklich verpflichtend |
+| Login mit unbestätigtem Konto | **405** bei `/accounts/confirm-email/` — die Verifizierung ist wirklich obligatorisch |
 | geteiltes temp.tf-Postfach, das bereits registriert ist | Registrierungsmail `"[Aion Labs] Account Already Exists"` mit einem Passwort-Reset-Link — das Tool wechselt zu einer frischen Adresse |
 
 ## 🧭 Funktionsweise
@@ -141,13 +147,13 @@ inbox (one address per account)                                  a fresh address
 | Schritt | Aufruf | Hinweise |
 | --- | --- | --- |
 | Postfach | temp.tf `GET /api/account?providers=hotmail,outlook&plus=1` | Plus-Alias auf einem echten Microsoft-Postfach, kein Captcha, `POST /api/check` liest es als JSON |
-| Vorfilter | `POST /api/check` | ein Postfach, das bereits Aion-Mail enthält, ist upstream registriert — vor dem Verbrauch einer Registrierung wechseln |
-| Registrierung | Chrome (CDP) auf `/accounts/signup/` | füllt E-Mail + Passwort ×2 + AGB, wartet auf das eigene Turnstile-Token der Seite (klickt das Widget nur, wenn es hängt) |
+| Vorfilter | `POST /api/check` | ein Postfach, das bereits Aion-Mail enthält, ist upstream registriert — vor einem Registrierungsversuch wechseln |
+| Registrierung | Chrome (CDP) auf `/accounts/signup/` | füllt E-Mail + Passwort ×2 + Bedingungen aus, wartet auf das eigene Turnstile-Token der Seite (klickt nur auf das Widget, wenn es hängt) |
 | Bestätigung | Mail-Link in derselben Browser-Session geöffnet | muss auf `/app/` landen; `"Account Already Exists"` → wechseln |
 | Schlüssel | `POST /accounts/login/` → `GET /app/api-keys/` → `POST /app/api-keys/create/` | reines HTTP, kein Browser: csrf von der Seite, Schlüssel aus der Antwort |
-| Gate | `POST /api.aionlabs.ai/v1/chat/completions` | `max_tokens: 512`, `content` **oder** `reasoning` = live; erst dann `keys.txt` |
+| Prüfung | `POST /api.aionlabs.ai/v1/chat/completions` | `max_tokens: 512`, `content` **oder** `reasoning` = live; erst dann `keys.txt` |
 
-Chrome wird pro Konto mit `--proxy-server` = dem Exit dieses Kontos in einem Wegwerf-Profil gestartet und geschlossen, sobald das Konto bestätigt ist — so gelangt keine Session zwischen Konten und der gesamte Lauf bleibt im Pool.
+Chrome wird pro Konto mit `--proxy-server` = dem Exit dieses Kontos gestartet, in einem Wegwerf-Profil, und geschlossen, sobald das Konto bestätigt ist — so gelangt keine Session zwischen Konten und der gesamte Lauf bleibt im Pool.
 
 ## ⚙️ CLI-Optionen
 
@@ -164,28 +170,28 @@ node src/cli.js --help
 
 | Env | Standard | Bedeutung |
 | --- | --- | --- |
-| `AIONLABS_PROXIES` | — | Exit-Pool, einer pro Zeile (wie `--pool`); fehlt = direkt |
-| `AIONLABS_MODEL` | `aion-labs/aion-3.0-mini` | Modell für das Live-Gate |
+| `AIONLABS_PROXIES` | — | Exit-Pool, einer pro Zeile (wie `--pool`); nicht gesetzt = direkt |
+| `AIONLABS_MODEL` | `aion-labs/aion-3.0-mini` | Modell für die Live-Prüfung |
 | `CHROME_PATH` | automatisch erkannt | Chrome/Chromium-Binary für den Registrierungsschritt |
 
 ## 🛰️ Hinter einem Proxy
 
 **Optional — bei Skalierung empfohlen.** Jede Anfrage geht durch einen Exit aus deiner Liste, und der Browser ebenso (Chrome erhält diesen Exit als `--proxy-server`).
 
-- **Mit einem Pool:** `--pool proxies.txt` (oder `AIONLABS_PROXIES`). Pro Konto wird ein Exit festgelegt, sodass Registrierung, Bestätigung, Schlüsselerstellung und das Gate alle von derselben Adresse ausgehen — das Panel sieht nie eine gemischte Spur. Ein toter Exit lässt diesen Versuch scheitern und der nächste Wechsel nimmt den nächsten Exit.
-- **Fail-closed:** ein explizites `--pool`, das fehlt oder keine nutzbare Exit-Zeile hat, ist ein **fataler Fehler**, niemals ein stiller direkter Lauf. Die Env-Variable (die der Launcher setzt) warnt und fällt stattdessen auf direkt zurück.
+- **Mit einem Pool:** `--pool proxies.txt` (oder `AIONLABS_PROXIES`). Pro Konto wird ein Exit festgelegt, sodass Registrierung, Bestätigung, Schlüsselerstellung und Prüfung alle von derselben Adresse ausgehen — das Panel sieht nie eine gemischte Spur. Ein toter Exit lässt diesen Versuch fehlschlagen und der nächste Wechsel nimmt den nächsten Exit.
+- **Fail-closed:** ein explizit angegebener `--pool`, der fehlt oder keine nutzbare Exit-Zeile hat, ist ein **fataler Fehler**, niemals ein stiller direkter Lauf. Die Env-Variable (die der Launcher setzt) warnt und fällt stattdessen auf direkt zurück.
 - **Ohne einen Pool:** die CLI gibt `running WITHOUT a proxy (direct)` aus und funktioniert genauso — nur der Ort, von dem die Pakete ausgehen, ändert sich.
 - `socks5://`, `socks5h://`, `http://`, `https://` und bloße `host:port`-Zeilen werden akzeptiert; SOCKS5-mit-Auth-Zeilen werden verworfen, weil Chrome sich bei ihnen nicht authentifizieren kann (HTTP-Proxy-Auth wird über die Fetch-Domain behandelt).
-- Die Exit-Qualität ist wichtiger als die Exit-Anzahl: öffentliche Listen verrotten innerhalb von Stunden. `--screen` testet jede Zeile gegen die Registrierungsseite **und** die API vor einem echten Lauf.
+- Die Qualität der Exits zählt mehr als die Anzahl: öffentliche Listen verrotten innerhalb von Stunden. `--screen` testet jede Zeile gegen die Registrierungsseite **und** die API vor einem echten Lauf.
 
 ## 📄 Dateien
 
 | Pfad | Inhalt |
 | --- | --- |
-| `keys.txt` | ein live-verifizierter Schlüssel pro Zeile (`alv2_…`, 48 Zeichen) — git-ignoriert |
-| `accounts.jsonl` | Adresse / Passwort / Schlüsselname / Schlüssel / Exit / Gate-Ergebnis pro Konto — git-ignoriert |
-| `proxies.txt` | deine Exits, einer pro Zeile — git-ignoriert |
-| `out/` | Lauf-Log (`aionlabs-cli-<date>.log`) und Screenshots fehlgeschlagener Captcha-Schritte — git-ignoriert |
+| `keys.txt` | ein live-verifizierter Schlüssel pro Zeile (`alv2_…`, 48 Zeichen) — von git ignoriert |
+| `accounts.jsonl` | Adresse / Passwort / Schlüsselname / Schlüssel / Exit / Prüfergebnis pro Konto — von git ignoriert |
+| `proxies.txt` | deine Exits, einer pro Zeile — von git ignoriert |
+| `out/` | Lauf-Log (`aionlabs-cli-<date>.log`) und Screenshots fehlgeschlagener Captcha-Schritte — von git ignoriert |
 
 ## 🔌 Mit 9Router verbinden
 
@@ -193,6 +199,15 @@ node src/cli.js --help
 
 ```bash
 node src/cli.js --connect-9router --9router-base http://localhost:20128 --9router-password 123456
+
+```
+
+## 🔌 Mit OmniRoute verbinden
+
+[OmniRoute](https://omniroute.online) ist ein selbst gehosteter, OpenAI-kompatibler Router:
+
+```bash
+node src/cli.js --connect-omniroute --omniroute-base http://localhost:20128 --omniroute-password 123456
 # or the standalone connector shipped next to the CLI:
 node src/connect-9router.js --api-key alv2_…
 ```
@@ -209,9 +224,9 @@ Standardwerte: `--9router-prefix aionlabs`, `--9router-name Aion Labs`, `--base-
 | 🌐 API-Form | OpenAI-kompatibel: `POST https://api.aionlabs.ai/v1/chat/completions` (6 Modell-IDs) |
 | 🔒 Deine Daten | nur `aionlabs.ai`, `api.aionlabs.ai`, dein Postfach-Backend und dein eigener Proxy werden kontaktiert; Schlüssel bleiben auf deinem Rechner |
 
-## 🐞 Probleme
+## 🐞 Issues
 
-Wenn Aion Labs sein Registrierungsformular, seinen Turnstile-Sitekey, die Bestätigungsmail oder die api-keys-Route ändert, stoppt das Tool an diesem Schritt und meldet die Ablehnung wörtlich (den genauen Status, die Seite, auf der es landete, oder den Mail-Betreff, den es sah). **[Öffne ein Issue](../../issues)** mit dem Befehl und der genauen Ausgabe.
+Wenn Aion Labs sein Registrierungsformular, seinen Turnstile-Sitekey, die Bestätigungsmail oder die api-keys-Route ändert, stoppt das Tool an diesem Schritt und meldet die Ablehnung wörtlich (den genauen Status, die Seite, auf der es gelandet ist, oder den Mail-Betreff, den es gesehen hat). **[Öffne ein Issue](../../issues)** mit dem Befehl und der genauen Ausgabe.
 
 ## 📄 Lizenz
 

@@ -37,7 +37,7 @@
 
 Aion Labs (`aionlabs.ai`) is a Django + **django-allauth** panel behind Cloudflare, and its signup has two hard gates: a real **Cloudflare Turnstile** widget (`sitekey 0x4AAAAAAAz_ySGy6QN0NLcx`, token field `cf-turnstile-response`) and **mandatory e-mail verification** — logging in with an unconfirmed account is bounced to `/accounts/confirm-email/` with a **405**, so there is no shortcut around reading the inbox. Everything after the mail is plain HTTP: `POST /accounts/login/` takes no captcha, the session cookie opens `/app/api-keys/`, and `POST /app/api-keys/create/` returns the `alv2_…` key inline. That is the whole rail this tool automates.
 
-The lane's own run took **keys verified** (`content:"OK"`, `finish_reason:stop`) on both `aion-labs/aion-3.0-mini` and `aion-labs/aion-3.5`; the scale pass minted 6 keys in 8 signup attempts (~56 s per key) through one browser session and a pinned exit.
+The lane's own run took **each account minted its own key, every one kept only after a live chat 200** (`content:"OK"`, `finish_reason:stop`) on both `aion-labs/aion-3.0-mini` and `aion-labs/aion-3.5`; the scale pass minted keys in 8 signup attempts (~56 s per key) through one browser session and a pinned exit.
 
 ## 🎁 Free tier — how much you get
 
@@ -66,14 +66,14 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 | Model ID | Context | Input / 1M | Output / 1M | Verified |
 | --- | --- | --- | --- | --- |
-| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **verified** |
-| `aion-labs/aion-3.5` | 256K | — | — | **verified** |
+| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **every key, chat-200** |
+| `aion-labs/aion-3.5` | 256K | — | — | **every key, chat-200** |
 | `aion-labs/aion-2.0` | 128K | $0.80 | $1.60 | chat-200 on the lane keys |
 | `aion-labs/aion-3.0` | 128K | $3.00 | $6.00 | listed |
 | `aion-labs/aion-3.5-mini` | 256K | — | — | listed |
 | `aion-labs/aion-rp-llama-3.1-8b` | 32K | — | — | listed (roleplay, 8B) |
 
-> ⚠️ **Two quirks the gate already handles.** The reasoning field is **`reasoning`**, not `reasoning_content`, and the mini/3.5 models think before answering: with `max_tokens` below ~512 the reply comes back `content:""` with `finish_reason:"length"`. The CLI asks for **512** by default (`--max-tokens`); a smaller budget makes a verified keys look dead.
+> ⚠️ **Two quirks the gate already handles.** The reasoning field is **`reasoning`**, not `reasoning_content`, and the mini/3.5 models think before answering: with `max_tokens` below ~512 the reply comes back `content:""` with `finish_reason:"length"`. The CLI asks for **512** by default (`--max-tokens`); a smaller budget makes a live key look dead.
 
 ## 🧪 How to use the API
 
@@ -93,7 +93,7 @@ print(c.chat.completions.create(model="aion-labs/aion-3.0-mini",
       messages=[{"role":"user","content":"Say OK"}], max_tokens=512).choices[0].message.content)
 ```
 
-A verified keys answers in **1.5–2.6 s** for a 60–100 token completion. The panel returns no rate-limit headers (`x-request-id` only), so the 15 RPM / 20k TPD ceilings are enforced silently.
+A live key answers in **1.5–2.6 s** for a 60–100 token completion. The panel returns no rate-limit headers (`x-request-id` only), so the 15 RPM / 20k TPD ceilings are enforced silently.
 
 ## 🛠 Quick start
 
@@ -114,23 +114,24 @@ The launcher asks for the proxy list (optional — without one the CLI runs dire
 
 ## ✅ Verified working — every key is tested
 
-> **Quality gates.** Every key here passed a live `chat-200` before it was written to `keys.txt`
-> (dead keys are never shipped). Router combos follow the same rule at the model level: an entry is
-> added **only if the model answers `chat-200` and can call tools** — a model without tool support,
-> a dead key or a dead provider is dropped instead of added. Works with **9Router and OmniRoute**.
-
 | Check | Result |
 | --- | --- |
 | `GET https://api.aionlabs.ai/v1/models` | **200**, no key, **6 model ids** |
 | `POST /v1/chat/completions` without a key | **401** `"Authentication credentials were not provided."` |
 | `GET /accounts/signup/` | **200**, allauth form (`#id_email`, `#id_password1/2`, `#id_accept_terms`) + `div.cf-turnstile` (sitekey `0x4AAAAAAAz_ySGy6QN0NLcx`) |
 | signup submit | **200 → `/accounts/confirm-email/`**, Turnstile token 730 chars, solved by the page's own widget in a visible Chrome |
-| confirmation mail | `noreply@<panel-mail>` `"[Aion Labs] Please Confirm Your Email Address"`, **~10 s** after submit; link `…/accounts/confirm-email/<key>/` → lands `/app/` |
+| confirmation mail | `noreply@mg.aionlabs.ai` `"[Aion Labs] Please Confirm Your Email Address"`, **~10 s** after submit; link `…/accounts/confirm-email/<key>/` → lands `/app/` |
 | `POST /accounts/login/` (confirmed account) | session established (the follow-up `/app/` GET answers **403** even so — harmless) |
 | `GET /app/api-keys/` + `POST /app/api-keys/create/` | **200**, `alv2_…` key (48 chars) returned inline |
 | `POST /v1/chat/completions` | **200** with `content:"OK"` on all **10** keys (`aion-3.0-mini` and `aion-3.5`) |
 | unconfirmed account login | **405** at `/accounts/confirm-email/` — verification really is mandatory |
 | shared temp.tf mailbox that is already registered | signup mails `"[Aion Labs] Account Already Exists"` with a password-reset link — the tool rolls to a fresh address |
+
+> **Quality gates.** Every key here passed a live `chat-200` before it was written to `keys.txt`
+> (dead keys are never shipped). Router combos follow the same rule at the model level: an entry is
+> added **only if the model answers `chat-200` and can call tools** — a model without tool support,
+> a dead key or a dead provider is dropped instead of added. Re-run the verify step any time;
+> failures are reported, never hidden.
 
 ## 🧭 How it works
 
@@ -198,8 +199,11 @@ node src/cli.js --help
 
 ```bash
 node src/cli.js --connect-9router --9router-base http://localhost:20128 --9router-password 123456
-
+# or the standalone connector shipped next to the CLI:
+node src/connect-9router.js --api-key alv2_…
 ```
+
+Defaults: `--9router-prefix aionlabs`, `--9router-name Aion Labs`, `--base-url https://api.aionlabs.ai/v1`, `--model aion-labs/aion-3.0-mini`. Models are served as `aionlabs/<model id>`.
 
 ## 🔌 Connect to OmniRoute
 
@@ -208,10 +212,10 @@ node src/cli.js --connect-9router --9router-base http://localhost:20128 --9route
 ```bash
 node src/cli.js --connect-omniroute --omniroute-base http://localhost:20128 --omniroute-password 123456
 # or the standalone connector shipped next to the CLI:
-node src/connect-9router.js --api-key alv2_…
+node src/connect-omniroute.js --api-key alv2_…
 ```
 
-Defaults: `--9router-prefix aionlabs`, `--9router-name Aion Labs`, `--base-url https://api.aionlabs.ai/v1`, `--model aion-labs/aion-3.0-mini`. Models are served as `aionlabs/<model id>`.
+Defaults: `--omniroute-prefix aionlabs`, `--omniroute-name Aion Labs`, `--base-url https://api.aionlabs.ai/v1`, `--model aion-labs/aion-3.0-mini`. Models are served as `aionlabs/<model id>`.
 
 ## 🔑 What one key gets you
 

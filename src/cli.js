@@ -25,7 +25,7 @@
  *                 runs with `--proxy-server` = the pinned exit for this account,
  *                 in a throw-away profile, and is closed again once the account
  *                 is confirmed.
- *   3. confirm    `noreply@<panel-mail> "[Aion Labs] Please Confirm Your Email
+ *   3. confirm    `noreply@mg.aionlabs.ai "[Aion Labs] Please Confirm Your Email
  *                 Address"` lands in ~10 s; the link inside is opened in the same
  *                 browser session and must land on `/app/`. The subject
  *                 `[Aion Labs] Account Already Exists` (password-reset link, no

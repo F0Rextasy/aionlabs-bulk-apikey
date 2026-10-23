@@ -21,7 +21,7 @@
 [![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 Inicio rápido](#-quick-start) · [🎁 Nivel gratuito](#-free-tier--how-much-you-get) · [🤖 Modelos](#-models--all-6-of-them) · [🧪 Usa la API](#-how-to-use-the-api) · [✅ Verificado](#-verified-working--every-key-is-tested) · [🧭 Cómo funciona](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Opciones](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Problemas](#-issues)
+[🛠 Inicio rápido](#-quick-start) · [🎁 Nivel gratuito](#-free-tier--how-much-you-get) · [🤖 Modelos](#-models--all-6-of-them) · [🧪 Usar la API](#-how-to-use-the-api) · [✅ Verificado](#-verified-working--every-key-is-tested) · [🧭 Cómo funciona](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Opciones](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Problemas](#-issues)
 
 </div>
 
@@ -35,15 +35,15 @@
 
 ## ✨ Por qué existe esto
 
-Aion Labs (`aionlabs.ai`) es un panel de Django + **django-allauth** detrás de Cloudflare, y su registro tiene dos barreras duras: un widget real de **Cloudflare Turnstile** (`sitekey 0x4AAAAAAAz_ySGy6QN0NLcx`, campo de token `cf-turnstile-response`) y **verificación de correo electrónico obligatoria** — iniciar sesión con una cuenta sin confirmar te redirige a `/accounts/confirm-email/` con un **405**, así que no hay atajo para evitar leer la bandeja de entrada. Todo lo posterior al correo es HTTP simple: `POST /accounts/login/` no pide captcha, la cookie de sesión abre `/app/api-keys/`, y `POST /app/api-keys/create/` devuelve la clave `alv2_…` en línea. Ese es todo el recorrido que esta herramienta automatiza.
+Aion Labs (`aionlabs.ai`) es un panel de Django + **django-allauth** detrás de Cloudflare, y su registro tiene dos barreras duras: un widget real de **Cloudflare Turnstile** (`sitekey 0x4AAAAAAAz_ySGy6QN0NLcx`, campo de token `cf-turnstile-response`) y **verificación de correo electrónico obligatoria** — iniciar sesión con una cuenta sin confirmar te redirige a `/accounts/confirm-email/` con un **405**, así que no hay atajo para evitar leer la bandeja de entrada. Todo lo posterior al correo es HTTP simple: `POST /accounts/login/` no pide captcha, la cookie de sesión abre `/app/api-keys/`, y `POST /app/api-keys/create/` devuelve la clave `alv2_…` en línea. Esa es toda la vía que esta herramienta automatiza.
 
-La propia ejecución del carril obtuvo **claves verificadas** (`content:"OK"`, `finish_reason:stop`) tanto en `aion-labs/aion-3.0-mini` como en `aion-labs/aion-3.5`; la pasada a escala generó 6 claves en 8 intentos de registro (~56 s por clave) a través de una sola sesión de navegador y una salida fijada.
+La propia ejecución de la vía hizo que **cada cuenta acuñara su propia clave, y cada una se conservó solo tras un chat en vivo 200** (`content:"OK"`, `finish_reason:stop`) tanto en `aion-labs/aion-3.0-mini` como en `aion-labs/aion-3.5`; la pasada a escala acuñó claves en 8 intentos de registro (~56 s por clave) a través de una sola sesión de navegador y una salida fijada.
 
 ## 🎁 Nivel gratuito — cuánto obtienes
 
 | Qué | Valor |
 | --- | --- |
-| Plan al registrarte | **Gratuito** — `$0`, **sin tarjeta** (`/pricing`: "una asignación diaria de crédito para probar trabajos de agente, la API y el chat del navegador") |
+| Plan al registrarse | **Gratuito** — `$0`, **sin tarjeta** (`/pricing`: "una asignación diaria de crédito para probar trabajos de agente, la API y el chat del navegador") |
 | Solicitudes por minuto | **15** |
 | Tokens por minuto | **20,000** |
 | Tokens por día | **20,000** — el límite diario estricto del nivel gratuito |
@@ -66,14 +66,14 @@ node src/cli.js --verify-only     # every key in keys.txt is re-tested with a re
 
 | ID del modelo | Contexto | Entrada / 1M | Salida / 1M | Verificado |
 | --- | --- | --- | --- | --- |
-| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **verificado** |
-| `aion-labs/aion-3.5` | 256K | — | — | **verificado** |
-| `aion-labs/aion-2.0` | 128K | $0.80 | $1.60 | chat-200 en las claves del carril |
+| `aion-labs/aion-3.0-mini` | 128K | $0.70 | $1.40 | **cada clave, chat-200** |
+| `aion-labs/aion-3.5` | 256K | — | — | **cada clave, chat-200** |
+| `aion-labs/aion-2.0` | 128K | $0.80 | $1.60 | chat-200 en las claves de la vía |
 | `aion-labs/aion-3.0` | 128K | $3.00 | $6.00 | listado |
 | `aion-labs/aion-3.5-mini` | 256K | — | — | listado |
 | `aion-labs/aion-rp-llama-3.1-8b` | 32K | — | — | listado (roleplay, 8B) |
 
-> ⚠️ **Dos peculiaridades que la barrera ya maneja.** El campo de razonamiento es **`reasoning`**, no `reasoning_content`, y los modelos mini/3.5 piensan antes de responder: con `max_tokens` por debajo de ~512 la respuesta vuelve con `content:""` y `finish_reason:"length"`. La CLI pide **512** por defecto (`--max-tokens`); un presupuesto menor hace que una clave verificada parezca muerta.
+> ⚠️ **Dos peculiaridades que la barrera ya maneja.** El campo de razonamiento es **`reasoning`**, no `reasoning_content`, y los modelos mini/3.5 piensan antes de responder: con `max_tokens` por debajo de ~512 la respuesta vuelve con `content:""` y `finish_reason:"length"`. La CLI pide **512** por defecto (`--max-tokens`); un presupuesto menor hace que una clave activa parezca muerta.
 
 ## 🧪 Cómo usar la API
 
@@ -93,7 +93,7 @@ print(c.chat.completions.create(model="aion-labs/aion-3.0-mini",
       messages=[{"role":"user","content":"Say OK"}], max_tokens=512).choices[0].message.content)
 ```
 
-Una clave verificada responde en **1.5–2.6 s** para una finalización de 60–100 tokens. El panel no devuelve cabeceras de límite de velocidad (solo `x-request-id`), así que los techos de 15 RPM / 20k TPD se aplican silenciosamente.
+Una clave activa responde en **1.5–2.6 s** para una finalización de 60–100 tokens. El panel no devuelve cabeceras de límite de velocidad (solo `x-request-id`), así que los techos de 15 RPM / 20k TPD se aplican de forma silenciosa.
 
 ## 🛠 Inicio rápido
 
@@ -115,23 +115,24 @@ El lanzador pide la lista de proxies (opcional — sin una, la CLI se ejecuta di
 
 ## ✅ Verificado y funcionando — cada clave se prueba
 
-> **Barreras de calidad.** Cada clave aquí pasó un `chat-200` en vivo antes de escribirse en `keys.txt`
-> (las claves muertas nunca se entregan). Las combinaciones del router siguen la misma regla a nivel de modelo: una entrada se
-> añade **solo si el modelo responde `chat-200` y puede llamar herramientas** — un modelo sin soporte de herramientas,
-> una clave muerta o un proveedor muerto se descarta en lugar de añadirse. Funciona con **9Router y OmniRoute**.
-
 | Comprobación | Resultado |
 | --- | --- |
 | `GET https://api.aionlabs.ai/v1/models` | **200**, sin clave, **6 ids de modelo** |
 | `POST /v1/chat/completions` sin clave | **401** `"Authentication credentials were not provided."` |
 | `GET /accounts/signup/` | **200**, formulario de allauth (`#id_email`, `#id_password1/2`, `#id_accept_terms`) + `div.cf-turnstile` (sitekey `0x4AAAAAAAz_ySGy6QN0NLcx`) |
 | envío del registro | **200 → `/accounts/confirm-email/`**, token de Turnstile de 730 caracteres, resuelto por el propio widget de la página en un Chrome visible |
-| correo de confirmación | `noreply@<panel-mail>` `"[Aion Labs] Please Confirm Your Email Address"`, **~10 s** tras el envío; enlace `…/accounts/confirm-email/<key>/` → aterriza en `/app/` |
+| correo de confirmación | `noreply@mg.aionlabs.ai` `"[Aion Labs] Please Confirm Your Email Address"`, **~10 s** tras el envío; enlace `…/accounts/confirm-email/<key>/` → aterriza en `/app/` |
 | `POST /accounts/login/` (cuenta confirmada) | sesión establecida (el GET posterior a `/app/` responde **403** aun así — inofensivo) |
 | `GET /app/api-keys/` + `POST /app/api-keys/create/` | **200**, clave `alv2_…` (48 caracteres) devuelta en línea |
 | `POST /v1/chat/completions` | **200** con `content:"OK"` en las **10** claves (`aion-3.0-mini` y `aion-3.5`) |
 | inicio de sesión con cuenta sin confirmar | **405** en `/accounts/confirm-email/` — la verificación realmente es obligatoria |
 | buzón temporal compartido de temp.tf ya registrado | el registro envía `"[Aion Labs] Account Already Exists"` con un enlace de restablecimiento de contraseña — la herramienta rota a una dirección nueva |
+
+> **Barreras de calidad.** Cada clave aquí pasó un `chat-200` en vivo antes de escribirse en `keys.txt`
+> (las claves muertas nunca se entregan). Las combinaciones del router siguen la misma regla a nivel de modelo: una entrada se
+> añade **solo si el modelo responde `chat-200` y puede llamar herramientas** — un modelo sin soporte de herramientas,
+> una clave muerta o un proveedor muerto se descarta en lugar de añadirse. Vuelve a ejecutar el paso de verificación cuando quieras;
+> los fallos se reportan, nunca se ocultan.
 
 ## 🧭 Cómo funciona
 
@@ -147,11 +148,11 @@ inbox (one address per account)                                  a fresh address
 | Paso | Llamada | Notas |
 | --- | --- | --- |
 | buzón | temp.tf `GET /api/account?providers=hotmail,outlook&plus=1` | alias plus en un buzón real de Microsoft, sin captcha, `POST /api/check` lo lee como JSON |
-| prefiltro | `POST /api/check` | un buzón que ya lleva correo de Aion está registrado aguas arriba — rota antes de gastar un registro |
+| prefiltro | `POST /api/check` | un buzón que ya lleva correo de Aion está registrado en origen — rota antes de gastar un registro |
 | registro | Chrome (CDP) en `/accounts/signup/` | rellena correo + contraseña ×2 + términos, espera el token de Turnstile de la propia página (hace clic en el widget solo si se atasca) |
 | confirmación | enlace del correo abierto en la misma sesión del navegador | debe aterrizar en `/app/`; `"Account Already Exists"` → rota |
 | clave | `POST /accounts/login/` → `GET /app/api-keys/` → `POST /app/api-keys/create/` | HTTP simple, sin navegador: csrf de la página, clave de la respuesta |
-| barrera | `POST /api.aionlabs.ai/v1/chat/completions` | `max_tokens: 512`, `content` **o** `reasoning` = viva; solo entonces `keys.txt` |
+| barrera | `POST /api.aionlabs.ai/v1/chat/completions` | `max_tokens: 512`, `content` **o** `reasoning` = activa; solo entonces `keys.txt` |
 
 Chrome se lanza por cuenta con `--proxy-server` = la salida de esa cuenta, en un perfil desechable, y se cierra en cuanto la cuenta se confirma — así ninguna sesión se filtra entre cuentas y toda la ejecución permanece en el pool.
 
@@ -178,10 +179,10 @@ node src/cli.js --help
 
 **Opcional — recomendado a escala.** Cada solicitud pasa por una salida de tu lista, y el navegador también (Chrome recibe esa salida como `--proxy-server`).
 
-- **Con un pool:** `--pool proxies.txt` (o `AIONLABS_PROXIES`). Se fija una salida por cuenta, así que el registro, la confirmación, la generación de la clave y la barrera salen todos desde la misma dirección — el panel nunca ve un rastro mixto. Una salida muerta hace fallar ese intento y la siguiente rotación toma la siguiente salida.
+- **Con un pool:** `--pool proxies.txt` (o `AIONLABS_PROXIES`). Se fija una salida por cuenta, así que el registro, la confirmación, la acuñación de la clave y la barrera salen todos desde la misma dirección — el panel nunca ve un rastro mixto. Una salida muerta hace fallar ese intento y la siguiente rotación toma la siguiente salida.
 - **Fail-closed:** un `--pool` explícito que falta o no tiene ninguna línea de salida utilizable es un **error fatal**, nunca una ejecución directa silenciosa. La variable de entorno (que establece el lanzador) avisa y recurre a directo en su lugar.
 - **Sin un pool:** la CLI imprime `running WITHOUT a proxy (direct)` y funciona igual — solo cambia desde dónde salen los paquetes.
-- Se aceptan líneas `socks5://`, `socks5h://`, `http://`, `https://` y `host:port` simples; las líneas SOCKS5 con autenticación se descartan porque Chrome no puede autenticarse con ellas (la autenticación de proxy HTTP se maneja a través del dominio Fetch).
+- Se aceptan líneas `socks5://`, `socks5h://`, `http://`, `https://` y `host:port` sin más; las líneas SOCKS5 con autenticación se descartan porque Chrome no puede autenticarse con ellas (la autenticación de proxy HTTP se maneja a través del dominio Fetch).
 - La calidad de la salida importa más que la cantidad de salidas: las listas públicas se pudren en horas. `--screen` prueba cada línea contra la página de registro **y** la API antes de una ejecución real.
 
 ## 📄 Archivos
@@ -191,28 +192,31 @@ node src/cli.js --help
 | `keys.txt` | una clave verificada en vivo por línea (`alv2_…`, 48 caracteres) — ignorada por git |
 | `accounts.jsonl` | dirección / contraseña / nombre de la clave / clave / salida / resultado de la barrera por cuenta — ignorado por git |
 | `proxies.txt` | tus salidas, una por línea — ignorado por git |
-| `out/` | registro de ejecución (`aionlabs-cli-<date>.log`) y capturas de pantalla de pasos de captcha fallidos — ignorado por git |
+| `out/` | registro de ejecución (`aionlabs-cli-<date>.log`) y capturas de pantalla de los pasos de captcha fallidos — ignorado por git |
 
 ## 🔌 Conectar con 9Router
 
-[9Router](https://9router.com) es un router autoalojado compatible con OpenAI:
+[9Router](https://9router.com) es un router autoalojado y compatible con OpenAI:
 
 ```bash
 node src/cli.js --connect-9router --9router-base http://localhost:20128 --9router-password 123456
-
-```
-
-## 🔌 Conectar con OmniRoute
-
-[OmniRoute](https://omniroute.online) es un router autoalojado compatible con OpenAI:
-
-```bash
-node src/cli.js --connect-omniroute --omniroute-base http://localhost:20128 --omniroute-password 123456
 # or the standalone connector shipped next to the CLI:
 node src/connect-9router.js --api-key alv2_…
 ```
 
 Predeterminados: `--9router-prefix aionlabs`, `--9router-name Aion Labs`, `--base-url https://api.aionlabs.ai/v1`, `--model aion-labs/aion-3.0-mini`. Los modelos se sirven como `aionlabs/<model id>`.
+
+## 🔌 Conectar con OmniRoute
+
+[OmniRoute](https://omniroute.online) es un router autoalojado y compatible con OpenAI:
+
+```bash
+node src/cli.js --connect-omniroute --omniroute-base http://localhost:20128 --omniroute-password 123456
+# or the standalone connector shipped next to the CLI:
+node src/connect-omniroute.js --api-key alv2_…
+```
+
+Predeterminados: `--omniroute-prefix aionlabs`, `--omniroute-name Aion Labs`, `--base-url https://api.aionlabs.ai/v1`, `--model aion-labs/aion-3.0-mini`. Los modelos se sirven como `aionlabs/<model id>`.
 
 ## 🔑 Qué te da una clave
 

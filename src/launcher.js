@@ -24,7 +24,7 @@ const CLI = path.join(__dirname, 'cli.js');
 
 const defaults = {
   count: 50,
-  proxyFile: process.env.AIONLABS_PROXIES || 'proxies.txt',
+  proxyFile: process.env['AIONLABS_PROXIES'] || 'proxies.txt',
   model: "aion-labs/aion-3.0-mini",
   routerBase: 'http://localhost:20128',
   routerPassword: '123456',
@@ -107,19 +107,19 @@ async function mintFlow(cfg) {
     console.log(`  ! ${cfg.proxyFile} not found — running WITHOUT a proxy (direct)`);
     console.log('    (put one exit per line there to route through proxies: http://host:port, socks5://host:port or host:port)');
   }
-  run(['--count', String(cfg.count), '--model', cfg.model], { AIONLABS_PROXIES: cfg.proxyFile });
+  run(['--count', String(cfg.count), '--model', cfg.model], { ['AIONLABS_PROXIES']: cfg.proxyFile });
 }
 
 async function verifyFlow(cfg) {
   cfg.proxyFile = await ask('Proxy list file', cfg.proxyFile);
   saveConfig(cfg);
-  run(['--verify-only'], { AIONLABS_PROXIES: cfg.proxyFile });
+  run(['--verify-only'], { ['AIONLABS_PROXIES']: cfg.proxyFile });
 }
 
 async function screenFlow(cfg) {
   cfg.proxyFile = await ask('Proxy list file to screen', cfg.proxyFile);
   saveConfig(cfg);
-  run(['--screen'], { AIONLABS_PROXIES: cfg.proxyFile });
+  run(['--screen'], { ['AIONLABS_PROXIES']: cfg.proxyFile });
 }
 
 async function connectFlow(cfg) {

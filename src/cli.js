@@ -347,13 +347,16 @@ function appendKey(key) {
   fs.mkdirSync(ROOT, { recursive: true });
   fs.appendFileSync(KEYS_FILE, key + '\n');
 }
-/** A dead key is never dropped silently: out of keys.txt, into keys-dead.txt. */
+/** A dead key is never dropped silently: out of keys.txt, into keys-dead.txt
+ *  as `key<TAB>sebep<TAB>ISO`. Only a definitive answer on the key itself
+ *  (401/403/quota/ban) parks it — a transport error or a 429 does not. */
 function buryKeys(dead) {
   if (!dead.length) return 0;
-  const parked = readKeys(KEYS_DEAD_FILE);
-  for (const k of dead) if (!parked.includes(k)) parked.push(k);
-  fs.writeFileSync(KEYS_DEAD_FILE, parked.map((k) => k + '\n').join(''));
-  fs.writeFileSync(KEYS_FILE, readKeys().filter((k) => !dead.includes(k)).map((k) => k + '\n').join(''));
+  const parked = readKeys(KEYS_DEAD_FILE).filter(Boolean);
+  const have = new Set(parked.map((l) => l.split('\t')[0]));
+  for (const d of dead) if (!have.has(d.key)) { parked.push(`${d.key}\t${d.why}\t${new Date().toISOString()}`); have.add(d.key); }
+  fs.writeFileSync(KEYS_DEAD_FILE, parked.join('\n') + '\n');
+  fs.writeFileSync(KEYS_FILE, readKeys().filter((k) => !dead.some((d) => d.key === k)).map((k) => k + '\n').join(''));
   return dead.length;
 }
 function ledger(rec) {
@@ -484,11 +487,10 @@ async function verifyOnly(exits) {
     try {
       const g = await proveKey(exit, keys[i]);
       if (g.ok) live++;
-      else dead.push(keys[i]);
+      else if ([401, 402, 403].includes(Number(g.status))) dead.push({ key: keys[i], why: g.status });
       console.log(`  ${g.ok ? '✔' : '✘'} ${keys[i].slice(0, 14)}… chat=${g.ok ? 200 : g.status || 0} ${g.ok ? `${g.model} "${g.sample}"` : String(g.sample).slice(0, 100)}`);
     } catch (e) {
-      dead.push(keys[i]);
-      console.log(`  ✘ ${keys[i].slice(0, 14)}… ${String(e.message).slice(0, 100)}`);
+      console.log(`  ✘ ${keys[i].slice(0, 14)}… ${String(e.message).slice(0, 100)} (transport — key kept)`);
     }
   }
   if (dead.length) console.log(`verified dead: ${buryKeys(dead)} key(s) → ${KEYS_DEAD_FILE} (out of ${path.basename(KEYS_FILE)})`);

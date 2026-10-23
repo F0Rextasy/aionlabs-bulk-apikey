@@ -21,7 +21,7 @@
 [![OmniRoute](https://img.shields.io/badge/OmniRoute-connector-8B5CF6?style=for-the-badge)](#-connect-to-omniroute)
 [![X](https://img.shields.io/badge/X-%40bigbullapp-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/bigbullapp)
 
-[🛠 Quick start](#-quick-start) · [🎁 Free tier](#-free-tier--how-much-you-get) · [🤖 Models](#-models--all-6-of-them) · [🧪 Use the API](#-how-to-use-the-api) · [✅ Verified](#-verified-working--every-key-is-tested) · [🧭 How it works](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Options](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [🐞 Issues](#-issues)
+[⚡ One command](#-one-command) · [🛠 Quick start](#-quick-start) · [🎁 Free tier](#-free-tier--how-much-you-get) · [🤖 Models](#-models--all-6-of-them) · [🧪 Use the API](#-how-to-use-the-api) · [✅ Verified](#-verified-working--every-key-is-tested) · [🧭 How it works](#-how-it-works) · [🔌 9Router](#-connect-to-9router) · [🔌 OmniRoute](#-connect-to-omniroute) · [⚙️ Options](#️-cli-options) · [🛰️ Proxies](#️-behind-a-proxy) · [⚠️ Terms](#️-terms-and-account-risk) · [🐞 Issues](#-issues)
 
 </div>
 
@@ -94,6 +94,20 @@ print(c.chat.completions.create(model="aion-labs/aion-3.0-mini",
 ```
 
 A live key answers in **1.5–2.6 s** for a 60–100 token completion. The panel returns no rate-limit headers (`x-request-id` only), so the 15 RPM / 20k TPD ceilings are enforced silently.
+
+## ⚡ One command
+
+```bash
+node src/cli.js --count N        # N accounts → N keys, one command, nothing to answer
+```
+
+The Cloudflare Turnstile widget is solved by the embedded browser engine (`src/solver.js`) inside a real Chrome on the page that carries it — `--auto` is the **default** and stays on, so there is no captcha to paste and no browser question in the way. Naming `--dry` prints the resolved plan (count, model, route, solver, Chrome path) and exits 0 without writing a file or opening a socket:
+
+```bash
+node src/cli.js --count N --dry
+```
+
+`npm start` (or `node src/launcher.js`) does the same from a menu: pick **1) Mint keys**, answer "How many keys?" (Enter = 10) and it runs `node src/cli.js --auto --count N`. `proxies.txt` is picked up automatically when it exists, otherwise the run is direct.
 
 ## 🛠 Quick start
 
@@ -226,6 +240,10 @@ Defaults: `--omniroute-prefix aionlabs`, `--omniroute-name Aion Labs`, `--base-u
 | 🔑 What one key gets you | one `alv2_…` key on its own account, chat-verified on `aion-labs/aion-3.0-mini` |
 | 🌐 API shape | OpenAI-compatible: `POST https://api.aionlabs.ai/v1/chat/completions` (6 model ids) |
 | 🔒 Your data | only `aionlabs.ai`, `api.aionlabs.ai`, your inbox backend and your own proxy are contacted; keys stay on your machine |
+
+## ⚠️ Terms and account risk
+
+This tool automates a sign-up flow, so **you** own what it does: automating a provider's sign-up can break that provider's terms of service, and the free tier an account hands you is the provider's to throttle, change or claw back at any time — per account and per IP. Run it only for accounts you are allowed to create, keep your proxy list your own, and do not treat these keys as production capacity. Nothing here is a licence to bypass a provider's rules.
 
 ## 🐞 Issues
 

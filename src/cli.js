@@ -56,7 +56,7 @@
  *   --gap MS         pause between accounts                                   [1500]
  *   --pool <file>    proxy list, one exit per line — FAIL-CLOSED: a missing or
  *                    unusable file aborts instead of silently going direct
- *   --tries N        pool entries tried per account before giving up            [2]
+ *   --exits N        exits tried per account before giving up                  [6]
  *   --timeout MS     per-request timeout                                     [60000]
  *   --browser <exe>  Chrome/Chromium binary (env CHROME_PATH)
  *   --debug-port N   pin the DevTools port (default: a free one)
@@ -126,7 +126,7 @@ const COUNT = Math.max(0, Number(arg('count', 1)) || 0);
 const MODEL = arg('model', process.env.AIONLABS_MODEL || 'aion-labs/aion-3.0-mini');
 const MAX_TOKENS = Number(arg('max-tokens', 512)) || 512;
 const GAP_MS = Number(arg('gap', 1500)) || 0;
-const TRIES = Math.max(1, Number(arg('tries', 2)) || 1);
+const EXITS = Math.max(1, Number(arg('exits', 6)) || 6);
 const LIMIT = Math.max(0, Number(arg('limit', 0)) || 0);
 const VERIFY_ONLY = has('verify-only');
 const SCREEN = has('screen');
@@ -193,6 +193,12 @@ function loadExits() {
   console.log(`pool: ${exits.length} exit(s) from ${file}`);
   return exits;
 }
+/** A dead exit, not a panel verdict — the flow rotates to the next candidate. */
+const isExitError = (e) =>
+  /proxy connect failed|proxy CONNECT refused|proxy timeout|connect timeout|connect failed|ETIMEDOUT|ECONNREFUSED|ECONNRESET|ECONNABORTED|EPIPE|ENETUNREACH|EHOSTUNREACH|EAI_AGAIN|socket hang up|secureConnect|TLS|handshake/i.test(
+    String((e && e.message) || e),
+  );
+
 
 /**
  * Exit vet: the signup page must answer AND still render the Turnstile widget.
@@ -367,8 +373,9 @@ function ledger(rec) {
 /** One account: mailbox → browser signup → confirm → HTTP key → chat gate. */
 async function attemptAccount(n, exits, seed) {
   const started = Date.now();
-  const rolls = Math.max(6, exits.length * TRIES);
+  const rolls = exits[0] === null ? 1 : EXITS;
   const errors = [];
+  let transportDead = 0;
   let address = null;
   let password = null;
   for (let roll = 0; roll < rolls; roll++) {
@@ -441,10 +448,15 @@ async function attemptAccount(n, exits, seed) {
       appendKey(key);
       ledger({ ...rec, ok: true });
       log(`account ${n}: LIVE — chat ${gate.status} ${gate.model} "${gate.sample}" → keys.txt`);
-      return rec;
+      return { rec };
     } catch (e) {
       const msg = String(e.message).slice(0, 200);
-      log(`account ${n}: attempt failed (${msg}) — rolling`);
+      if (isExitError(e)) {
+        transportDead++;
+        log(`account ${n}: exit ${roll + 1}/${rolls} ${labelOf(exit)} dead (${msg.slice(0, 70)}) → next exit`);
+      } else {
+        log(`account ${n}: attempt failed (${msg}) — rolling`);
+      }
       errors.push(msg);
       // The account may well be confirmed already (e.g. the key view answered a
       // redirect we could not read), so the credentials belong in the ledger for
@@ -456,17 +468,25 @@ async function attemptAccount(n, exits, seed) {
   }
   ledger({ at: nowIso(), provider: 'aionlabs', n, email: address, ok: false, rolls, errors: errors.slice(-6) });
   log(`account ${n}: no key after ${rolls} roll(s) — last errors ${JSON.stringify(errors.slice(-3))}`);
-  return null;
+  return { rec: null, allTransportDead: transportDead > 0 && transportDead === rolls };
 }
 
 async function mint(exits) {
   log(`aionlabs mint · ${COUNT} account(s) · model ${MODEL} · max_tokens ${MAX_TOKENS} · routes ${exits.filter(Boolean).length || 'direct'} · keys → ${KEYS_FILE}`);
   if (exits.filter(Boolean).length < COUNT) log('note: fewer exits than accounts — accounts reuse the pool round-robin');
   let made = 0;
+  const routes = exits[0] === null ? 1 : EXITS;
+  let transportDead = 0;
   for (let i = 0; i < COUNT; i++) {
-    const rec = await attemptAccount(i + 1, exits, i);
-    if (rec) made++;
+    const out = await attemptAccount(i + 1, exits, i);
+    if (out.rec) made++;
+    else if (out.allTransportDead) transportDead++;
     if (i < COUNT - 1 && GAP_MS) await sleep(GAP_MS);
+  }
+  if (!made && transportDead === COUNT) {
+    const route = exits[0] === null ? 'direct mode (no proxy list)' : `${exits.length}-exit pool`;
+    console.error(`[fatal] no usable route — ${COUNT} account(s) × ${routes} candidate(s) over ${route}: every attempt died at the transport layer.`);
+    process.exit(1);
   }
   log(`done — ${made}/${COUNT} key(s) written to ${KEYS_FILE}`);
   process.exit(made === COUNT ? 0 : 1);
